@@ -1,15 +1,25 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Standalone output for Node.js deployment
+  output: 'standalone',
+  
+  // Compress responses
+  compress: true,
+  
+  // Image optimization
   images: {
-    domains: ['images.unsplash.com'],
-    unoptimized: true, // For static export if needed
+    domains: ['swapmylookcom-be-production.up.railway.app'],
+    // Add other domains as needed
   },
-  eslint: {
-    ignoreDuringBuilds: true,
+  
+  // Environment variables available to the browser
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
   },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  
+  // Production optimizations
+  swcMinify: true,
+  reactStrictMode: true,
 }
 
 module.exports = nextConfig
