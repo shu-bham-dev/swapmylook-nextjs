@@ -1,0 +1,171 @@
+name: Deploy Next.js frontend to cPanel
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json','**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: |
+          set -e
+          export npm_config_production=false
+          echo "npm_config_production=$npm_config_production"
+
+          if [ -f package-lock.json ]; then
+            echo "Attempting reproducible install (npm ci)..."
+            if npm ci --prefer-offline --no-audit; then
+              echo "npm ci succeeded"
+            else
+              echo "npm ci failed — removing node_modules & package-lock.json and retrying with npm install --no-optional"
+              rm -rf node_modules package-lock.json
+              export npm_config_optional=false
+              npm install --no-optional
+            fi
+          else
+            echo "No package-lock.json — running npm install --no-optional"
+            export npm_config_optional=false
+            npm install --no-optional
+          fi
+
+      - name: Verify environment
+        run: |
+          node -v
+          npm -v
+          echo "node_modules size:"
+          du -sh node_modules || true
+
+      - name: Build Next.js application
+        run: npm run build
+        env:
+          npm_config_optional: false
+          # API configuration - same as React app
+          NEXT_PUBLIC_API_URL: 'https://swapmylookcom-be-production.up.railway.app/api/v1'
+          # Contentful CMS configuration
+          NEXT_PUBLIC_CONTENTFUL_SPACE_ID: ${{ secrets.NEXT_PUBLIC_CONTENTFUL_SPACE_ID || '' }}
+          NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN: ${{ secrets.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN || '' }}
+          NEXT_PUBLIC_CONTENTFUL_ENVIRONMENT: ${{ secrets.NEXT_PUBLIC_CONTENTFUL_ENVIRONMENT || 'master' }}
+
+      - name: Prepare static export (if needed)
+        run: |
+          # Check if we should create a static export for cPanel
+          # This would require output: 'export' in next.config.js
+          echo "Next.js build completed successfully"
+          echo "Build output is in .next directory"
+          echo ""
+          echo "For cPanel deployment options:"
+          echo "1. For Node.js hosting: Deploy entire project and run 'npm start'"
+          echo "2. For static hosting: Update next.config.js with output: 'export' and rebuild"
+          echo ""
+          echo "Current build includes:"
+          ls -la .next/ 2>/dev/null || echo ".next directory not found"
+
+      - name: Create deployment package
+        run: |
+          # Create a clean deployment directory
+          mkdir -p deploy-package
+          
+          # Copy essential files for deployment
+          # Option A: For Node.js server deployment
+          cp -r .next deploy-package/
+          cp -r public deploy-package/ 2>/dev/null || true
+          cp package.json deploy-package/
+          cp package-lock.json deploy-package/ 2>/dev/null || true
+          cp next.config.js deploy-package/ 2>/dev/null || true
+          
+          # Create deployment instructions
+          cat > deploy-package/DEPLOYMENT_README.md << 'EOF'
+          # Next.js Deployment Instructions
+          
+          ## Option 1: Node.js Server (Recommended)
+          1. Install production dependencies:
+             ```bash
+             npm ci --only=production
+             ```
+          2. Start the server:
+             ```bash
+             npm run start
+             ```
+          3. For production, use a process manager like PM2:
+             ```bash
+             pm2 start npm --name "swapmylook-next" -- start
+             ```
+          
+          ## Option 2: Static Export (if configured)
+          If next.config.js has `output: 'export'`, you can serve the static files:
+          1. The static files are in the `out/` directory
+          2. Configure your web server (Apache/Nginx) to serve from this directory
+          
+          ## Environment Variables
+          Make sure to set these environment variables on your server:
+          - NEXT_PUBLIC_API_URL: https://swapmylookcom-be-production.up.railway.app/api/v1
+          - NEXT_PUBLIC_CONTENTFUL_SPACE_ID: (from Contentful)
+          - NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN: (from Contentful)
+          - NEXT_PUBLIC_CONTENTFUL_ENVIRONMENT: master
+          
+          ## Port Configuration
+          The server runs on port 3000 by default. Configure your reverse proxy accordingly.
+          EOF
+          
+          echo "Deployment package created in deploy-package/"
+
+      - name: Deploy to cPanel via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.FRONTEND_FTP_HOST }}
+          username: ${{ secrets.FRONTEND_FTP_USERNAME }}
+          password: ${{ secrets.FRONTEND_FTP_PASSWORD }}
+          port: 21
+          protocol: ftp
+          local-dir: deploy-package/
+          server-dir: ./
+          exclude: |
+            **/.git*
+            **/.github*
+            **/.next/cache/**
+            **/.next/analyze/**
+            **/*.log
+            **/node_modules/**
+
+      - name: Deployment summary
+        run: |
+          echo "🚀 Next.js application deployment completed!"
+          echo ""
+          echo "📦 What was deployed:"
+          echo "   - Next.js build output (.next directory)"
+          echo "   - Public assets (public directory)"
+          echo "   - Package configuration files"
+          echo "   - Deployment instructions"
+          echo ""
+          echo "🔧 Next steps on your server:"
+          echo "   1. SSH into your cPanel server"
+          echo "   2. Navigate to the deployment directory"
+          echo "   3. Follow instructions in DEPLOYMENT_README.md"
+          echo ""
+          echo "🌐 Your Next.js application will be available once the server is running"
+          echo "   Default port: 3000"
+          echo ""
+          echo "💡 Tip: For better performance, consider:"
+          echo "   - Using a process manager (PM2)"
+          echo "   - Setting up a reverse proxy (Nginx/Apache)"
+          echo "   - Configuring SSL/TLS certificates"
