@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useRouter } from 'next/navigation';
-//router
+//routers
 export default function AIClothesChangerPage() {
   const router = useRouter();
 
