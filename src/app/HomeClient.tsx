@@ -218,7 +218,7 @@ export default function Home() {
       </main>
 
       {/* How to Change Clothes in Photos with AI Section */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+      <section className="max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 py-10">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold bg-linear-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent mb-4">
             How to Change Clothes in Photos with AI
@@ -266,7 +266,7 @@ export default function Home() {
       <div className="h-12"></div>
 
       {/* Customize and Design Your Own Outfit With AI Section */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 bg-gray-50">
+      <section className="max-w-6xl mx-auto px-4 sm:px-4 lg:px-8 py-10 bg-gray-50">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold bg-linear-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent mb-4">
             Customize and Design Your Own Outfit With AI
@@ -334,7 +334,7 @@ export default function Home() {
       <div className="h-12"></div>
 
       {/* FAQ Section */}
-      <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold bg-linear-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent mb-3">
             Frequently Asked Questions
