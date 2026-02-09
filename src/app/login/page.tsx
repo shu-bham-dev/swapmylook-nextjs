@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Sparkles,
   Mail,
@@ -63,9 +62,13 @@ export default function LoginPage() {
           description: 'You have successfully logged in.',
         });
         router.push('/');
-      } catch (error) {
-        // Error handling is now done by the API service
+      } catch (error: any) {
         console.error('Authentication failed:', error);
+        // Show user-friendly error message
+        const errorMessage = error?.message || 'Invalid email or password';
+        toast.error('Login failed', {
+          description: errorMessage,
+        });
       } finally {
         setIsLoading(false);
       }
@@ -102,8 +105,13 @@ export default function LoginPage() {
         
         // Navigate to OTP verification page with email, name, and password
         router.push(`/otp-verification?email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}&password=${encodeURIComponent(password)}&purpose=signup`);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to send OTP:', error);
+        // Show user-friendly error message
+        const errorMessage = error?.message || 'Failed to send OTP. Please try again.';
+        toast.error('Signup failed', {
+          description: errorMessage,
+        });
       } finally {
         setIsLoading(false);
       }
@@ -118,9 +126,14 @@ export default function LoginPage() {
       // Get Google OAuth URL and redirect
       const { url } = await apiService.getGoogleAuthUrl();
       window.location.href = url;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Google login failed:', error);
       setIsLoading(false);
+      // Show user-friendly error message
+      const errorMessage = error?.message || 'Failed to initiate Google login. Please try again.';
+      toast.error('Google login failed', {
+        description: errorMessage,
+      });
     }
   };
 
