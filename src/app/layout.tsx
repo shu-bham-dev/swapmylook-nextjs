@@ -9,7 +9,7 @@ import { Toaster } from "sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "SwapMyLook - AI-Powered Fashion Visualization",
+  title: "SwapMyLook - Free AI Outfit Changer & Virtual Try-On",
   description: "Transform your photos instantly with our powerful AI outfit changer technology. Try on outfits virtually with perfect fit and realistic lighting.",
   keywords: ["AI fashion", "virtual try-on", "outfit changer", "photo editing", "fashion visualization"],
   verification: {
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     icon: "/favicon.svg",
   },
   openGraph: {
-    title: "SwapMyLook - AI-Powered Fashion Visualization",
+    title: "SwapMyLook - Free AI Outfit Changer & Virtual Try-On",
     description: "Transform your photos instantly with our powerful AI outfit changer technology.",
     type: "website",
     locale: "en_US",

@@ -138,7 +138,7 @@ export function Navigation({ onLogout, isLoggedIn = false, userCredits = 25, log
                 SwapMyLook
               </h1>
               <p className="text-xs text-muted-foreground hidden sm:block">
-                AI-Powered Fashion Visualization
+                Free AI Outfit Changer & Virtual Try-On
               </p>
             </div>
           </button>
